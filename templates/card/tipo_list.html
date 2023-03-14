@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <script src="https://kit.fontawesome.com/37c71a35a1.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://kit.fontawesome.com/37c71a35a1.css" crossorigin="anonymous">
+    <style>
+        *{
+            outline: none;
+        }
+
+        .divprincipal{
+            margin: 40px;
+            display: flex;
+        }
+
+        h1{
+            margin: 40px;
+            margin-bottom: -15px;
+        }
+
+        .card{
+            margin-bottom: 13px;
+            margin-right: 13px;
+        }
+
+        #cardfundo{
+            background-color: green;
+        }
+
+        #cardcontent{
+            background-color: white;
+            margin: 8px;
+        }
+
+        .cardacoes{
+            display: inline;
+            position: right;
+        }
+
+        .cardtitle{
+            display: flex;
+            position: right;
+        }
+    </style>
+    <script>
+
+    </script>
+    <title>Kanban App</title>
+</head>
+<body>
+    <div>
+        <h1>Kanban do projeto</h1>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#myModal" onclick="criarTipo()">
+    </div>
+
+    <div class="divprincipal">
+        {% if tipos.exists %}
+            {% for tipo in tipos %}
+            <div class="card" style="width: 18rem;">
+              <div class="card-body" id="cardfundo">
+                  <div class="cardtitle">
+                      <h5 class="card-title">{{ tipo }}</h5>
+                      <a href="{% url 'excluitipo' pk=tipo.id %}" ><i class="fa-regular fa-circle-xmark"></i></a>
+                  </div>
+                  {% if tipo.testeField %}
+                    {% for c in tipo.cards.all|dictsort:"posicao"%}
+                        <div class="card-body" id="cardcontent">
+                            <div class="cardtext"><a href="" onclick="updateSpan({{c.id}})" id="{{c.id}}" data-bs-toggle="modal" data-bs-target="#myModal"
+                            >{{c.descricao}}</a></div>
+                            <div class="cardacoes"><a href="{% url 'muda' pk=c.id tp=tipo.id %}"><i class="fa-solid fa-chevron-up"></i></a></div>
+                            <div class="cardacoes"><a onclick="mudaTipo({{c.id}}, {{tipo.id}})"
+                                    data-bs-toggle="modal" data-bs-target="#myModalTipo"><i class="fa-regular fa-square-minus"></i></a></div>
+                            <div class="cardacoes"><a href="{% url 'exclui' pk=c.id %}"><i class="fa-solid fa-x"></i></a></div>
+                        </div>
+                    {% endfor %}
+                  {% else %}
+                    <p class="card-text">Nenhum card adicionado</p>
+                  {% endif %}
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#myModal" onclick="tipoInput(1, {{tipo.id}})">
+                  Adicionar outro card
+                </button>
+              </div>
+            </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <form action="" method="post" name="formpopup" id="formpopup">
+        {% csrf_token %}
+        <div id="myModal" class="modal fade" role="dialog">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
+                <h4 class="modal-title" id="textoform">Texto da nota</h4>
+              </div>
+              <div class="modal-body">
+                  <input type="text" class='descricao' value="{{ descricao }}"
+                         name="descricao" id="descricao" required="required" >
+                  <input type="number" name="tipo" id="tipo" hidden="hidden">
+              </div>
+              <div class="modal-footer">
+                  <button type="submit" class="btn btn-primary" id="btnConfirmar">Confirmar</button>
+                  <button type="button" class="btn btn-default" data-bs-dismiss="modal">Cancelar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+    </form>
+
+    <form action="{% url 'mudatipo' %}" method="post" name="formpopuptipo" id="formpopuptipo">
+        {% csrf_token %}
+        <div id="myModalTipo" class="modal fade" role="dialog">
+          <div class="modal-dialog">
+
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Mudar a posição da nota para:</h4>
+              </div>
+                <div class="modal-body" >
+                    <input type="number" name="modalcard" id="modalcard" hidden="hidden">
+                    {% for tipo in tipos %}
+                        <input type="submit" class="btn btn-primary" name="btntipomuda" value="{{tipo}}"
+                                id="btn{{tipo.id}}">
+                    {% endfor %}
+                </div>
+            </div>
+          </div>
+        </div>
+    </form>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js" integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+
+
+    <script>
+
+            var i = document.getElementById('tipo');
+            var f = document.getElementById('formpopup');
+            var d = document.getElementById('descricao');
+
+            function updateSpan(id){
+                var teste = id;
+                var s = document.getElementById(teste);
+                document.getElementById('textoform').innerHTML = 'Texto da nota:';
+                d.value = s.text;
+                var aux = "/update/";
+                aux = aux.concat(teste).concat('/');
+                f.action = aux
+            }
+
+            function mudaTipo(idcard, idtipo){
+                var modalcard = document.getElementById('modalcard');
+                modalcard.value = idcard;
+                var st = "btn"+idtipo;
+                var valid = document.getElementById(st);
+                var limpacampo = document.getElementsByName('btntipomuda');
+                for(var c=0; c <limpacampo.length; c++){
+                    limpacampo[c].disabled = false;
+                }
+                valid.disabled = true;
+
+            }
+
+            function tipoInput(n, ty){
+                d.value = ''
+                document.getElementById('textoform').innerHTML = 'Texto da nota:';
+                i.value = ty;
+                aux = "/criar";
+                aux = aux.concat('/');
+                f.action = aux
+            }
+
+            function criarTipo(){
+                var aux = "/criartipo/";
+                d.value = ''
+                f.action = aux
+                document.getElementById('textoform').innerHTML = 'Texto do tipo:';
+
+            }
+
+    </script>
+
+   </body>
+</html>
