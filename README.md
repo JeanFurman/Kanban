@@ -51,9 +51,10 @@ activate
 cd ..
 cd ..
 pip install -r requirements.txt
+cd gen
 python env_gen.py
-python manage.py makemigrations
-python manage.py migrate
+cd ..
+python manage.py migrate --run-syncdb
 python manage.py runserver
 ```
 Acesse a URL mostrada no fim dos comandos.
